@@ -28,7 +28,6 @@ export async function takeChallenge(challengeId: string) {
   }
 
   // 3. Generar metadata temporal para la tarea
-  // Creamos un nombre de rama único usando su usuario de github y los últimos 6 números del timestamp
   const githubUser = session.user.githubUsername ?? "dev"
   const branchName = `bh-${githubUser}-${Date.now().toString().slice(-6)}`
   
@@ -52,20 +51,38 @@ export async function takeChallenge(challengeId: string) {
   redirect("/mis-tareas")
 }
 
-
 export async function cancelTask(assignmentId: string) {
   const session = await auth()
   if (!session?.user) throw new Error("No autorizado")
 
-  // Actualizamos el estado de la tarea a CANCELADO
   await prisma.taskAssignment.update({
     where: { 
       id: assignmentId,
-      userId: session.user.id // Medida de seguridad: solo el dueño puede cancelarla
+      userId: session.user.id
     },
     data: { status: "CANCELADO" }
   })
 
   revalidatePath("/mis-tareas")
   revalidatePath("/")
+}
+
+export async function checkAndExpireTasks(userId: string) {
+  const now = new Date()
+
+  // Buscamos y actualizamos de un solo golpe todas las tareas vencidas
+  const result = await prisma.taskAssignment.updateMany({
+    where: {
+      userId: userId,
+      status: "EN_DESARROLLO",
+      expiresAt: {
+        lt: now // Menor a la fecha/hora actual
+      }
+    },
+    data: { status: "EXPIRADO" }
+  })
+
+  // Retornamos true si expiró alguna tarea (ya no intentamos purgar el caché aquí
+  // porque Next.js lo actualizará automáticamente al terminar el render de la página)
+  return result.count > 0
 }

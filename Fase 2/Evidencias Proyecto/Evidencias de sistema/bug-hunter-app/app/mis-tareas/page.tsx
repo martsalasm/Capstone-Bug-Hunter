@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Countdown } from "@/components/countdown"
-import { cancelTask } from "@/app/actions/task"
+import { cancelTask, checkAndExpireTasks } from "@/app/actions/task"
 
 export const dynamic = "force-dynamic"
 
@@ -11,13 +11,16 @@ export default async function StudentDashboardPage() {
   const session = await auth()
   if (!session?.user) redirect("/")
 
+  // 1. EJECUTAR LIMPIEZA DE EXPIRACIONES ANTES DE CONSULTAR
+  await checkAndExpireTasks(session.user.id)
+
+  // 2. Traer los datos actualizados
   const assignments = await prisma.taskAssignment.findMany({
     where: { userId: session.user.id },
     include: { challenge: true },
     orderBy: { createdAt: "desc" }
   })
 
-  // Ahora la tarea activa puede estar "EN_DESARROLLO" o esperando revisión ("PR_ENVIADO")
   const activeTask = assignments.find(task => 
     task.status === "EN_DESARROLLO" || task.status === "PR_ENVIADO"
   )
@@ -58,7 +61,6 @@ export default async function StudentDashboardPage() {
             </Link>
           </div>
         ) : activeTask.status === "PR_ENVIADO" ? (
-          // INTERFAZ DE PR ENVIADO (En Revisión)
           <div className="bg-[#1a1625] border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.05)] rounded-xl p-8 relative overflow-hidden text-center">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-600"></div>
             <div className="text-5xl mb-4">👀</div>
@@ -72,7 +74,6 @@ export default async function StudentDashboardPage() {
             </a>
           </div>
         ) : (
-          // INTERFAZ DE EN DESARROLLO (La que ya tenías)
           <div className="bg-[#151D2C] border border-bh-yellow/50 shadow-[0_0_30px_rgba(245,166,35,0.05)] rounded-xl p-6 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-bh-yellow to-amber-600"></div>
             <div className="flex flex-col md:flex-row justify-between gap-6">
@@ -96,7 +97,8 @@ export default async function StudentDashboardPage() {
                 <div className="text-center mb-4">
                   <p className="text-xs text-bh-muted uppercase tracking-wider font-semibold mb-1">Tiempo Restante</p>
                   <div className="text-3xl">
-                    <Countdown expiresAt={activeTask.expiresAt} />
+                    {/* ENVIAMOS LA FECHA COMO ISOString PARA EVITAR FALLOS DE ZONA HORARIA */}
+                    <Countdown expiresAt={activeTask.expiresAt.toISOString()} />
                   </div>
                 </div>
                 <div className="space-y-2">
