@@ -3,6 +3,8 @@ import { auth, signIn, signOut } from "@/auth";
 
 export async function Navbar() {
   const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
+  const isCreatorOrAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "CREATOR";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-bh-border bg-bh-primary/90 backdrop-blur-md">
@@ -24,9 +26,18 @@ export async function Navbar() {
           <Link href="/mis-tareas" className="text-bh-muted hover:text-white transition">
             Mis Tareas
           </Link>
-          <Link href="/tutorial" className="text-bh-muted hover:text-white transition">
-            Tutorial Git
-          </Link>
+
+          {/* Links para Creadores / Administradores */}
+          {isCreatorOrAdmin && (
+            <Link href="/admin/crear-desafio" className="text-bh-yellow hover:underline transition font-semibold">
+              + Publicar Desafío
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href="/admin/usuarios" className="text-purple-400 hover:text-purple-300 transition font-semibold">
+              Gestión Usuarios
+            </Link>
+          )}
         </nav>
 
         {/* Zona de Autenticación */}

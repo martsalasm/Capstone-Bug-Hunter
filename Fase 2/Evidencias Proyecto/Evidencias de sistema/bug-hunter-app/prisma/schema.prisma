@@ -90,6 +90,7 @@ model Challenge {
   id          String           @id @default(uuid())
   title       String
   description String           @db.Text
+  acceptanceCriteria String[]
   difficulty  Difficulty
   techStack   String[]
   repoUrl     String

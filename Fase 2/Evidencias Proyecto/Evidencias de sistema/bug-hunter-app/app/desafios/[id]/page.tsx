@@ -21,7 +21,6 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
   if (!challenge) notFound()
 
-  // Verificamos si el alumno ya tiene algo activo
   const activeTask = session?.user ? await prisma.taskAssignment.findFirst({
     where: { userId: session.user.id, status: "EN_DESARROLLO" }
   }) : null
@@ -29,7 +28,6 @@ export default async function ChallengeDetailPage({ params }: Props) {
   const hasActiveTask = Boolean(activeTask)
   const takeChallengeWithId = takeChallenge.bind(null, challenge.id)
 
-  // Cálculo visual de expiración (6 horas desde el momento en que ve la página)
   const estimatedExpiration = new Date(Date.now() + 6 * 60 * 60 * 1000)
   const expirationTime = estimatedExpiration.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })
   const expirationDate = estimatedExpiration.toLocaleDateString("es-CL")
@@ -58,7 +56,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 {challenge.difficulty}
               </span>
               <span className="text-sm text-bh-muted">
-                Publicado por {challenge.creator.name.split(" ")[0]} • {new Date(challenge.createdAt).toLocaleDateString("es-CL")}
+                Publicado por {challenge.creator.name?.split(" ")[0] ?? "Docente"} • {new Date(challenge.createdAt).toLocaleDateString("es-CL")}
               </span>
             </div>
             
@@ -83,15 +81,19 @@ export default async function ChallengeDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Caja: Criterios de Aceptación */}
+          {/* Caja: Criterios de Aceptación DINÁMICOS */}
           <div className="bg-bh-secondary border border-bh-border rounded-2xl p-8">
             <h3 className="text-xl font-bold text-bh-yellow mb-4">Lo que se pide para aceptar la tarea</h3>
-            <ul className="text-bh-muted space-y-3 list-disc pl-5 leading-relaxed">
-              <li>Que la tarjeta se vea ordenada y no se desconfigure si se abre desde el celular.</li>
-              <li>Que al pasar el mouse por arriba, el puntero cambie visualmente indicando interactividad.</li>
-              <li>Implementar la solución utilizando estrictamente las clases utilitarias de Tailwind CSS.</li>
-              <li>Asegurar que el repositorio contenga commits semánticos demostrando el proceso.</li>
-            </ul>
+            
+            {challenge.acceptanceCriteria.length > 0 ? (
+              <ul className="text-bh-muted space-y-3 list-disc pl-5 leading-relaxed">
+                {challenge.acceptanceCriteria.map((criterio, index) => (
+                  <li key={index}>{criterio}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 italic">No se especificaron criterios de aceptación particulares.</p>
+            )}
           </div>
         </div>
 
