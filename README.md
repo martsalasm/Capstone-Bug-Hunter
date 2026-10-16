@@ -29,3 +29,14 @@ Bug-Hunter está dirigido principalmente a:
 ## Objetivo del proyecto
 
 Facilitar la inserción temprana de los estudiantes al mundo laboral mediante una plataforma de colaboración remota y flexible, que les permita desarrollar sus competencias técnicas, adquirir experiencia y familiarizarse con dinámicas de trabajo similares a las del entorno profesional.
+
+
+## Integrantes del equipo y sus roles
+
+El equipo está compuesto por dos integrantes, quienes compartirán responsabilidades relacionadas con el desarrollo, las pruebas, la documentación y el seguimiento del proyecto. Cada integrante tendrá un foco principal según sus conocimientos y fortalezas técnicas.
+
+| Integrante | Rol | Responsabilidades principales |
+|---|---|---|
+| Martín Salas | Product Owner & Lead Frontend | Definir y priorizar los requerimientos del producto, participar en los criterios de aceptación y desarrollar el frontend, la interfaz de usuario y el mini tutorial de Git y GitHub. También colaborará en la elaboración de la documentación del proyecto. |
+| Martín Pero | Lead Backend & DevOps | Diseñar la arquitectura backend, gestionar la base de datos con PostgreSQL y Prisma ORM, implementar la autenticación con Auth.js y los proveedores GitHub y Microsoft, integrar los Webhooks de GitHub y configurar los entornos de desarrollo, pruebas y despliegue. |
+
