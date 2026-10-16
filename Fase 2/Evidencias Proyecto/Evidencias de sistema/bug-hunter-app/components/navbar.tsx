@@ -29,8 +29,8 @@ export async function Navbar() {
 
           {/* Links para Creadores / Administradores */}
           {isCreatorOrAdmin && (
-            <Link href="/admin/crear-desafio" className="text-bh-yellow hover:underline transition font-semibold">
-              + Publicar Desafío
+            <Link href="/admin/mis-desafios" className="text-bh-yellow hover:underline transition font-semibold">
+              Mis Desafíos
             </Link>
           )}
           {isAdmin && (
@@ -72,24 +72,31 @@ export async function Navbar() {
               </button>
             </form>
           ) : (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              
+              {/* ÁREA CLIQUEABLE HACIA EL PERFIL */}
+              <Link 
+                href="/perfil" 
+                className="flex items-center gap-2 hover:opacity-75 transition-opacity cursor-pointer bg-bh-card border border-bh-border px-2 py-1.5 rounded-full"
+                title="Ver mi perfil"
+              >
                 {session.user.image ? (
                   <img
                     src={session.user.image}
                     alt={session.user.name ?? "Avatar"}
-                    className="w-8 h-8 rounded-full border border-bh-border"
+                    className="w-7 h-7 rounded-full border border-bh-border"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-bh-yellow text-black flex items-center justify-center font-bold text-xs">
+                  <div className="w-7 h-7 rounded-full bg-bh-yellow text-black flex items-center justify-center font-bold text-xs">
                     {session.user.name?.charAt(0) ?? "U"}
                   </div>
                 )}
-                <span className="hidden sm:inline text-xs font-medium text-bh-muted">
+                <span className="hidden sm:inline text-xs font-bold text-white pr-2">
                   {session.user.name?.split(" ")[0]}
                 </span>
-              </div>
+              </Link>
 
+              {/* Botón de Cerrar Sesión */}
               <form
                 action={async () => {
                   "use server";
@@ -99,7 +106,7 @@ export async function Navbar() {
                 <button
                   type="submit"
                   title="Cerrar sesión"
-                  className="text-bh-muted hover:text-red-400 text-xs px-2 py-1 rounded transition"
+                  className="text-bh-muted hover:text-red-400 text-xs px-2 py-1 rounded transition border border-transparent hover:border-red-400/30 hover:bg-red-400/10"
                 >
                   Salir
                 </button>
