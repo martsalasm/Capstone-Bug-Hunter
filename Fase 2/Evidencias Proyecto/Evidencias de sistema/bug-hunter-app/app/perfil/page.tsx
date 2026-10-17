@@ -26,42 +26,47 @@ export default async function ProfilePage() {
 
   if (!user) redirect("/")
 
-  // Cálculos de Gamificación
+  // Tarea activa actualmente (si existe)
+  const activeTask = user.assignments.find(
+    a => a.status === "EN_DESARROLLO" || a.status === "PR_ENVIADO"
+  )
+
+  // Tareas completadas
   const completedTasks = user.assignments.filter(a => a.status === "COMPLETADO")
   const completedCount = completedTasks.length
 
-  // Sistema de rangos basado en la escala solicitada
+  // Sistema de rangos basado en la escala definida
   let rankName = "Explorador"
-  let rankColor = "text-gray-400" // 0
+  let rankColor = "text-gray-400"
   
   if (completedCount >= 1 && completedCount <= 5) {
     rankName = "Novato"
-    rankColor = "text-emerald-400" // 1-5
+    rankColor = "text-emerald-400"
   } else if (completedCount >= 6 && completedCount <= 9) {
     rankName = "Amateur"
-    rankColor = "text-blue-400" // 6-9
+    rankColor = "text-blue-400"
   } else if (completedCount >= 10 && completedCount <= 15) {
     rankName = "Establecido"
-    rankColor = "text-purple-400" // 10-15
+    rankColor = "text-purple-400"
   } else if (completedCount >= 16 && completedCount <= 24) {
     rankName = "Contribuidor Destacado"
-    rankColor = "text-bh-yellow" // 16-24
+    rankColor = "text-bh-yellow"
   } else if (completedCount >= 25) {
     rankName = "Top Tier"
-    rankColor = "text-red-500 font-black drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]" // 25+
+    rankColor = "text-red-500 font-black drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
+    <main className="max-w-4xl mx-auto px-4 py-12 space-y-8">
       
-      <div className="mb-8 text-sm text-bh-muted">
+      <div className="text-sm text-bh-muted">
         <Link href="/" className="text-bh-yellow hover:underline transition">
           ← Volver al listado de proyectos
         </Link>
       </div>
 
       {/* CABECERA DEL PERFIL */}
-      <div className="bg-bh-card border border-bh-border rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 mb-8 relative overflow-hidden">
+      <div className="bg-bh-card border border-bh-border rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
         {/* Fondo decorativo */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-bh-yellow/5 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -102,8 +107,41 @@ export default async function ProfilePage() {
         </div>
       </div>
 
+      {/* SECCIÓN DESAFÍO ACTIVO (SI EXISTE) */}
+      {activeTask && (
+        <div className="bg-bh-card border border-bh-yellow/40 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-xl">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-bh-yellow to-amber-600"></div>
+          
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  {activeTask.status === "PR_ENVIADO" ? "EN REVISIÓN (PR)" : "DESAFÍO EN PROGRESO"}
+                </span>
+                <span className="text-xs text-bh-muted">1 / 1 en desarrollo</span>
+              </div>
+              <h3 className="text-xl font-bold text-white">
+                {activeTask.challenge.title}
+              </h3>
+              <p className="text-xs text-bh-muted font-mono">
+                Rama asignada: <span className="text-emerald-400 font-bold">{activeTask.branchName}</span>
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <Link 
+                href="/mis-tareas"
+                className="w-full md:w-auto text-center bg-bh-yellow hover:bg-bh-yellow-hover text-black font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-[0_0_15px_rgba(245,166,35,0.2)]"
+              >
+                Ir a Mi Panel de Tareas ➔
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* SECCIÓN DE GAMIFICACIÓN / LOGROS */}
-      <div className="bg-[#151D2C] border border-bh-border rounded-3xl p-8 md:p-12 mb-8 shadow-lg">
+      <div className="bg-[#151D2C] border border-bh-border rounded-3xl p-8 md:p-12 shadow-lg">
         <div className="text-center mb-8">
           <h2 className="text-xs font-bold tracking-widest text-bh-muted uppercase mb-2">Nivel Actual</h2>
           <div className={`text-3xl font-black uppercase tracking-tight ${rankColor} drop-shadow-md`}>
