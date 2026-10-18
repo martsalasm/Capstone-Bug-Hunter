@@ -26,6 +26,11 @@ export async function Navbar() {
           <Link href="/mis-tareas" className="text-bh-muted hover:text-white transition">
             Mis Tareas
           </Link>
+          
+          {/* Enlace al Tutorial de Git */}
+          <Link href="/tutorial-git" className="text-bh-muted hover:text-white transition flex items-center gap-1.5">
+            Básicos de Git
+          </Link>
 
           {/* Links para Creadores / Administradores */}
           {isCreatorOrAdmin && (
