@@ -4,7 +4,7 @@ import { PrismaClient, Role, Difficulty, TaskStatus } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  // Limpiar datos previos (el orden importa por las llaves foráneas, aunque Cascade ayuda)
+  // Limpiar datos previos
   await prisma.auditLog.deleteMany()
   await prisma.taskAssignment.deleteMany()
   await prisma.challenge.deleteMany()
@@ -39,10 +39,9 @@ async function main() {
       githubUsername: 'martinsalas',
       role: Role.STUDENT,
       emailVerified: new Date(),
-      image: 'https://avatars.githubusercontent.com/u/1?v=4', // Imagen placeholder
+      image: 'https://avatars.githubusercontent.com/u/1?v=4',
     },
   })
-
 
   // 4. Crear Desafíos variados (Catálogo)
   const challengeFacil = await prisma.challenge.create({
@@ -96,10 +95,26 @@ async function main() {
     },
   })
 
+  // === NUEVO DESAFÍO PARA DEMO EN VIVO ===
+  const challengeDemo = await prisma.challenge.create({
+    data: {
+      title: 'Sincronización de Webhooks con Smee.io',
+      description: 'Configurar y validar la recepción de eventos de GitHub mediante Smee.io. Este desafío está diseñado para probar la integración en tiempo real del sistema BugHunter.',
+      acceptanceCriteria: [
+        'Realizar un fork del repositorio de prueba.',
+        'Crear una nueva rama con el formato asignado.',
+        'Realizar un commit de prueba y enviar un Pull Request.',
+        'El sistema debe detectar el Pull Request y actualizar el estado automáticamente.'
+      ],
+      difficulty: Difficulty.FACIL,
+      techStack: ['GitHub Webhooks', 'Smee.io', 'Integración'],
+      timeLimitHours: 2, // Tiempo corto para dar sensación de urgencia en la demo
+      repoUrl: 'https://github.com/martsalasm/test-smee', // Tu repo de prueba
+      creatorId: docente.id, 
+    },
+  })
 
-  // 5. Crear Asignaciones con distintos estados para probar la UI
-  
-  // Tarea 1: EN DESARROLLO (Vence en 6 horas)
+  // 5. Crear Asignaciones
   const expiresAtActive = new Date()
   expiresAtActive.setHours(expiresAtActive.getHours() + challengeFacil.timeLimitHours)
 
@@ -113,9 +128,8 @@ async function main() {
     },
   })
 
-  // Tarea 2: COMPLETADO (Para sumar estrellas en el perfil)
   const expiresAtCompleted = new Date()
-  expiresAtCompleted.setDate(expiresAtCompleted.getDate() - 1) // Vencía ayer
+  expiresAtCompleted.setDate(expiresAtCompleted.getDate() - 1) 
 
   const tareaCompletada = await prisma.taskAssignment.create({
     data: {
@@ -124,11 +138,10 @@ async function main() {
       branchName: 'bh-dev-2002',
       status: TaskStatus.COMPLETADO,
       expiresAt: expiresAtCompleted,
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // Creada hace 2 días
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), 
     },
   })
 
-  // Simular el webhook de GitHub que completó la tarea
   await prisma.auditLog.create({
     data: {
       assignmentId: tareaCompletada.id,
@@ -143,9 +156,8 @@ async function main() {
     }
   })
 
-  // Tarea 3: EXPIRADO (Para probar el historial negativo)
   const expiresAtExpired = new Date()
-  expiresAtExpired.setDate(expiresAtExpired.getDate() - 5) // Venció hace 5 días
+  expiresAtExpired.setDate(expiresAtExpired.getDate() - 5) 
 
   await prisma.taskAssignment.create({
     data: {
@@ -154,7 +166,7 @@ async function main() {
       branchName: 'bh-dev-3003',
       status: TaskStatus.EXPIRADO,
       expiresAt: expiresAtExpired,
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Creada hace 7 días
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     },
   })
 }

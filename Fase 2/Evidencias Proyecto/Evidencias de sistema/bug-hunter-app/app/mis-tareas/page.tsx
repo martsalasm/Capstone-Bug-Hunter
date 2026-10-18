@@ -32,6 +32,25 @@ export default async function StudentDashboardPage() {
   const usageText = activeTask ? "1 / 1 en uso" : "0 / 1 en uso"
   const usageColor = activeTask ? "text-bh-yellow" : "text-emerald-400"
 
+  // --- CÁLCULO DEL PRÓXIMO CASTIGO (Si se rinde) ---
+  let nextPenaltyText = ""
+  if (activeTask) {
+    const failedAttempts = assignments.filter(a => 
+      a.challengeId === activeTask.challengeId && 
+      ["EXPIRADO", "CANCELADO"].includes(a.status)
+    ).length
+
+    if (failedAttempts === 0) {
+      nextPenaltyText = "Enfriamiento: 30 minutos"
+    } else if (failedAttempts === 1) {
+      nextPenaltyText = "Enfriamiento: 2 horas"
+    } else if (failedAttempts === 2) {
+      nextPenaltyText = "Enfriamiento: 6 horas"
+    } else {
+      nextPenaltyText = "Bloqueo permanente"
+    }
+  }
+
   return (
     <main className="max-w-5xl mx-auto px-4 py-10">
       
@@ -105,11 +124,19 @@ export default async function StudentDashboardPage() {
                   <a href={activeTask.challenge.repoUrl} target="_blank" rel="noreferrer" className="block w-full text-center bg-bh-yellow hover:bg-bh-yellow-hover text-black font-bold py-2 rounded-lg text-sm transition">
                     Ver Repositorio
                   </a>
-                  <form action={cancelTask.bind(null, activeTask.id)}>
-                    <button type="submit" className="w-full bg-transparent border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 font-semibold py-2 rounded-lg text-sm transition">
-                      Rendirme (Liberar cupo)
-                    </button>
-                  </form>
+                  
+                  {/* --- AVISO DE PENALIZACIÓN --- */}
+                  <div className="mt-4 pt-4 border-t border-red-500/20 text-center">
+                    <p className="text-[10px] text-red-400 mb-2 leading-tight">
+                      Si te rindes ahora aplicarás a tu próximo intento:<br/>
+                      <strong className="font-bold">{nextPenaltyText}</strong>
+                    </p>
+                    <form action={cancelTask.bind(null, activeTask.id)}>
+                      <button type="submit" className="w-full bg-transparent border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 font-semibold py-2 rounded-lg text-sm transition">
+                        Rendirme (Liberar cupo)
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </div>
             </div>
