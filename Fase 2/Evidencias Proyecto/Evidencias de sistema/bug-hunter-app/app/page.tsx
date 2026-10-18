@@ -8,11 +8,29 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const session = await auth();
   
-  // Traemos los últimos 6 desafíos publicados
-  const challenges = await prisma.challenge.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 6,
-  });
+  // Consultas dinámicas concurrentes a PostgreSQL
+  const [challenges, completedTasksCount, activeChallengesCount, totalUsersCount] = await Promise.all([
+    // Últimos 6 desafíos para la grilla
+    prisma.challenge.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
+    // Total de tareas completadas exitosamente
+    prisma.taskAssignment.count({
+      where: { status: "COMPLETADO" },
+    }),
+    // Total de proyectos/desafíos activos (sin expiración global o aún vigentes)
+    prisma.challenge.count({
+      where: {
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+    }),
+    // Total de Bug Hunters registrados en la plataforma
+    prisma.user.count(),
+  ]);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-12 space-y-24">
@@ -27,7 +45,7 @@ export default async function Home() {
             Resuelve bugs reales y micro-tareas publicadas por docentes y alumnos de Duoc. Desarrolla tus habilidades y amplía tu portafolio.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center md:justify-start">
-            <Link href="#proyectos" className="bg-bh-yellow hover:bg-bh-yellow-hover text-black font-bold px-6 py-3 rounded-lg transition text-center">
+            <Link href="/desafios" className="bg-bh-yellow hover:bg-bh-yellow-hover text-black font-bold px-6 py-3 rounded-lg transition text-center">
               Explorar Proyectos ➔
             </Link>
             <Link href="#como-funciona" className="bg-bh-secondary border border-bh-border hover:bg-bh-border text-white font-semibold px-6 py-3 rounded-lg transition text-center">
@@ -37,19 +55,19 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* STATS BANNER */}
+      {/* STATS BANNER (DINÁMICO) */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-bh-card border border-bh-border rounded-2xl p-8 md:p-12 text-center">
         <div className="space-y-2">
-          <h3 className="text-4xl font-extrabold text-white">2,400+</h3>
+          <h3 className="text-4xl font-extrabold text-white">{completedTasksCount}</h3>
           <p className="text-xs font-bold text-bh-muted tracking-widest uppercase">Tareas Completadas</p>
         </div>
         <div className="space-y-2 md:border-x md:border-bh-border">
-          <h3 className="text-4xl font-extrabold text-white">50+</h3>
+          <h3 className="text-4xl font-extrabold text-white">{activeChallengesCount}</h3>
           <p className="text-xs font-bold text-bh-muted tracking-widest uppercase">Proyectos Activos Ahora</p>
         </div>
         <div className="space-y-2">
-          <h3 className="text-4xl font-extrabold text-white">100+</h3>
-          <p className="text-xs font-bold text-bh-muted tracking-widest uppercase">Bug Hunters Activos</p>
+          <h3 className="text-4xl font-extrabold text-white">{totalUsersCount}</h3>
+          <p className="text-xs font-bold text-bh-muted tracking-widest uppercase">Bug Hunters Registrados</p>
         </div>
       </section>
 
@@ -59,7 +77,7 @@ export default async function Home() {
           <h2 className="text-3xl font-bold text-white tracking-tight">
             Últimos Trabajos Publicados
           </h2>
-          <Link href="#proyectos" className="text-sm font-semibold text-bh-yellow hover:text-bh-yellow-hover transition">
+          <Link href="/desafios" className="text-sm font-semibold text-bh-yellow hover:text-bh-yellow-hover transition">
             Ver Todos los Proyectos ➔
           </Link>
         </div>

@@ -20,7 +20,7 @@ export async function Navbar() {
 
         {/* Links de Navegación */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link href="/" className="text-white hover:text-bh-yellow transition">
+          <Link href="/desafios" className="text-white hover:text-bh-yellow transition">
             Proyectos Disponibles
           </Link>
           <Link href="/mis-tareas" className="text-bh-muted hover:text-white transition">
