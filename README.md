@@ -2,7 +2,7 @@
 
 ## Información del proyecto
 
-- **Integrantes:** Martín Pero Cordero y Martín Andres Sala
+- **Integrantes:** Martín Pero Cordero y Martín Andres Salas
 - **Asignatura:** Capstone
 - **Sección:** 800D
 - **Docente:** Aldo Alberto Martinez
