@@ -10,6 +10,13 @@ export default async function CreateChallengePage() {
     redirect("/")
   }
 
+  // Calcular fecha por defecto: 1 semana (7 días) a partir de hoy
+  const defaultDate = new Date()
+  defaultDate.setDate(defaultDate.getDate() + 7)
+  // Ajuste de zona horaria para que el formato empate perfecto con el input datetime-local
+  defaultDate.setMinutes(defaultDate.getMinutes() - defaultDate.getTimezoneOffset())
+  const defaultExpiresAt = defaultDate.toISOString().slice(0, 16)
+
   return (
     <main className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-6">
@@ -122,6 +129,8 @@ export default async function CreateChallengePage() {
               <input 
                 type="datetime-local" 
                 name="expiresAt" 
+                defaultValue={defaultExpiresAt}
+                required
                 className="w-full bg-bh-secondary border border-bh-border text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-bh-yellow transition"
               />
             </div>

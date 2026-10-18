@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Link from "next/link"
+import DeleteChallengeButton from "@/components/deleteChallengeButton"
 
 export const dynamic = "force-dynamic"
 
@@ -152,13 +153,14 @@ export default async function MyCreatedChallengesPage() {
                   </div>
 
                   {/* Acciones */}
-                  <div className="flex items-center gap-3 border-t md:border-t-0 border-bh-border pt-4 md:pt-0">
+                  <div className="flex flex-row items-center gap-3 border-t md:border-t-0 border-bh-border pt-4 md:pt-0 md:pl-4">
                     <Link 
                       href={`/desafios/${challenge.id}`}
-                      className="bg-bh-secondary border border-bh-border hover:bg-bh-border text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition text-center"
+                      className="bg-bh-secondary border border-bh-border hover:bg-bh-border text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition text-center flex-1 md:flex-none"
                     >
                       Ver Vista Previa
                     </Link>
+                    <DeleteChallengeButton challengeId={challenge.id} />
                   </div>
 
                 </div>
