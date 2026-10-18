@@ -15,7 +15,21 @@ export async function takeChallenge(challengeId: string) {
 
   const userId = session.user.id
 
-  // 2. Regla de negocio: ¿Ya tiene una tarea en desarrollo?
+  // 2. Consultar el desafío para leer su configuración de límites de tiempo
+  const challenge = await prisma.challenge.findUnique({
+    where: { id: challengeId }
+  })
+
+  if (!challenge) {
+    throw new Error("El desafío especificado no existe.")
+  }
+
+  // Validar si el desafío ya cerró a nivel global
+  if (challenge.expiresAt && new Date() > new Date(challenge.expiresAt)) {
+    throw new Error("Este desafío ya ha finalizado y no acepta más postulaciones.")
+  }
+
+  // 3. Regla de negocio: ¿Ya tiene una tarea en desarrollo?
   const activeTask = await prisma.taskAssignment.findFirst({
     where: {
       userId: userId,
@@ -27,14 +41,15 @@ export async function takeChallenge(challengeId: string) {
     throw new Error("Ya tienes un desafío activo. Termínalo o cancélalo antes de tomar otro.")
   }
 
-  // 3. Generar metadata temporal para la tarea
+  // 4. Generar metadata temporal para la tarea
   const githubUser = session.user.githubUsername ?? "dev"
   const branchName = `bh-${githubUser}-${Date.now().toString().slice(-6)}`
   
-  // Plazo de 6 horas desde este momento exacto
-  const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000)
+  // Plazo individual dinámico definido por el docente (en horas)
+  const hours = challenge.timeLimitHours ?? 6
+  const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000)
 
-  // 4. Insertar en PostgreSQL mediante Prisma
+  // 5. Insertar en PostgreSQL mediante Prisma
   await prisma.taskAssignment.create({
     data: {
       userId,
@@ -45,7 +60,7 @@ export async function takeChallenge(challengeId: string) {
     }
   })
 
-  // 5. Limpiar caché y redirigir al panel del estudiante
+  // 6. Limpiar caché y redirigir al panel del estudiante
   revalidatePath("/mis-tareas")
   revalidatePath("/")
   redirect("/mis-tareas")
@@ -82,7 +97,5 @@ export async function checkAndExpireTasks(userId: string) {
     data: { status: "EXPIRADO" }
   })
 
-  // Retornamos true si expiró alguna tarea (ya no intentamos purgar el caché aquí
-  // porque Next.js lo actualizará automáticamente al terminar el render de la página)
   return result.count > 0
 }

@@ -28,9 +28,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
   const hasActiveTask = Boolean(activeTask)
   const takeChallengeWithId = takeChallenge.bind(null, challenge.id)
 
-  const estimatedExpiration = new Date(Date.now() + 6 * 60 * 60 * 1000)
+  // 1. Límite de tiempo dinámico según lo definido por el docente
+  const limitHours = challenge.timeLimitHours ?? 6
+  const estimatedExpiration = new Date(Date.now() + limitHours * 60 * 60 * 1000)
   const expirationTime = estimatedExpiration.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })
   const expirationDate = estimatedExpiration.toLocaleDateString("es-CL")
+
+  // 2. Comprobar si el desafío ya cerró de forma global
+  const isGloballyExpired = challenge.expiresAt ? new Date() > new Date(challenge.expiresAt) : false
 
   const difficultyStyles = {
     FACIL: "bg-badge-facil-bg text-badge-facil-text border-badge-facil-text/20",
@@ -56,7 +61,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 {challenge.difficulty}
               </span>
               <span className="text-sm text-bh-muted">
-                Publicado por {challenge.creator.name?.split(" ")[0] ?? "Docente"} • {new Date(challenge.createdAt).toLocaleDateString("es-CL")}
+                Publicado por {challenge.creator.name?.split(" ")[0] ?? "Docente"} · {new Date(challenge.createdAt).toLocaleDateString("es-CL")}
               </span>
             </div>
             
@@ -85,7 +90,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
           <div className="bg-bh-secondary border border-bh-border rounded-2xl p-8">
             <h3 className="text-xl font-bold text-bh-yellow mb-4">Lo que se pide para aceptar la tarea</h3>
             
-            {challenge.acceptanceCriteria.length > 0 ? (
+            {challenge.acceptanceCriteria && challenge.acceptanceCriteria.length > 0 ? (
               <ul className="text-bh-muted space-y-3 list-disc pl-5 leading-relaxed">
                 {challenge.acceptanceCriteria.map((criterio, index) => (
                   <li key={index}>{criterio}</li>
@@ -104,18 +109,28 @@ export default async function ChallengeDetailPage({ params }: Props) {
             
             <div className="flex justify-between items-center mb-5 text-sm">
               <span className="text-bh-muted">Disponibilidad:</span>
-              <span className="text-emerald-400 font-bold">Disponible</span>
+              {isGloballyExpired ? (
+                <span className="text-red-400 font-bold bg-red-500/10 px-2.5 py-0.5 rounded border border-red-500/20">
+                  Cerrado Globalmente
+                </span>
+              ) : (
+                <span className="text-emerald-400 font-bold">Disponible</span>
+              )}
             </div>
 
             <div className="flex justify-between mb-6 text-sm">
               <span className="text-bh-muted">Tiempo Límite:</span>
               <div className="text-right">
-                <span className="font-bold block text-white">6 Horas</span>
-                <span className="text-xs text-bh-muted">(El tiempo para enviar tu solución)</span>
-                <div className="mt-2 text-xs text-bh-yellow leading-tight">
-                  Expira a las {expirationTime} hrs del {expirationDate}.<br/>
-                  ¡No te la pierdas! ¡Tómala!
-                </div>
+                <span className="font-bold block text-white">
+                  {limitHours} {limitHours === 1 ? "Hora" : "Horas"}
+                </span>
+                <span className="text-xs text-bh-muted">(Plazo para enviar tu solución)</span>
+                {!isGloballyExpired && (
+                  <div className="mt-2 text-xs text-bh-yellow leading-tight">
+                    Expira a las {expirationTime} hrs del {expirationDate}.<br/>
+                    ¡No te la pierdas! ¡Tómala!
+                  </div>
+                )}
               </div>
             </div>
 
@@ -130,6 +145,10 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <div className="text-center p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
                 <p className="text-xs text-red-300">Vincula tu GitHub en la barra superior para continuar.</p>
               </div>
+            ) : isGloballyExpired ? (
+              <div className="text-center p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <p className="text-xs text-red-300">Este desafío ha finalizado y ya no acepta más postulaciones.</p>
+              </div>
             ) : hasActiveTask ? (
               <div className="text-center p-4 bg-bh-secondary border border-bh-border rounded-xl">
                 <p className="text-xs text-bh-muted mb-3">Ya tienes un desafío en desarrollo (1/1 límite).</p>
@@ -139,7 +158,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
               </div>
             ) : (
               <form action={takeChallengeWithId}>
-                <button className="w-full flex items-center justify-center gap-2 bg-bh-yellow hover:bg-bh-yellow-hover text-black font-bold py-3.5 rounded-xl transition shadow-[0_0_15px_rgba(245,166,35,0.3)] hover:shadow-[0_0_25px_rgba(245,166,35,0.5)] mb-3">
+                <button className="w-full flex items-center justify-center gap-2 bg-bh-yellow hover:bg-bh-yellow-hover text-black font-bold py-3.5 rounded-xl transition shadow-[0_0_15px_rgba(245,166,35,0.3)] hover:shadow-[0_0_25px_rgba(245,166,35,0.5)] mb-3 cursor-pointer">
                   Tomar este Desafío ➔
                 </button>
               </form>

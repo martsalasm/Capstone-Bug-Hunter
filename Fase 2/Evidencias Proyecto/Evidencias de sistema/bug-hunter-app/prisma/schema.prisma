@@ -93,6 +93,10 @@ model Challenge {
   acceptanceCriteria String[]
   difficulty  Difficulty
   techStack   String[]
+
+  timeLimitHours Int          @default(6)
+  expiresAt      DateTime?
+
   repoUrl     String
   creatorId   String
   creator     User             @relation(fields: [creatorId], references: [id], onDelete: Cascade)
