@@ -13,7 +13,6 @@ export default async function CreateChallengePage() {
   // Calcular fecha por defecto: 1 semana (7 días) a partir de hoy
   const defaultDate = new Date()
   defaultDate.setDate(defaultDate.getDate() + 7)
-  // Ajuste de zona horaria para que el formato empate perfecto con el input datetime-local
   defaultDate.setMinutes(defaultDate.getMinutes() - defaultDate.getTimezoneOffset())
   const defaultExpiresAt = defaultDate.toISOString().slice(0, 16)
 
@@ -52,6 +51,21 @@ export default async function CreateChallengePage() {
             rows={4}
             placeholder="Detalla qué fallas debe corregir el alumno y los requerimientos de la entrega..."
             className="w-full bg-bh-secondary border border-bh-border text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-bh-yellow transition"
+          />
+        </div>
+
+        {/* Criterios de Aceptación */}
+        <div>
+          <label className="block text-xs font-bold text-gray-300 uppercase mb-1">
+            Criterios de Aceptación
+          </label>
+          <p className="text-[11px] text-bh-muted mb-2">Escribe cada criterio separado por una coma o en una nueva línea.</p>
+          <textarea 
+            name="acceptanceCriteria" 
+            required 
+            rows={3}
+            placeholder={`El componente debe usar Tailwind CSS\nDebe verse correctamente en dispositivos móviles\nIncluir manejo de errores en llamadas a la API`}
+            className="w-full bg-bh-secondary border border-bh-border text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-bh-yellow transition font-mono"
           />
         </div>
 

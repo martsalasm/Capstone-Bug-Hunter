@@ -18,21 +18,30 @@ export async function createChallenge(formData: FormData) {
   const repoUrl = formData.get("repoUrl") as string
   const difficulty = formData.get("difficulty") as Difficulty
   const techStackRaw = formData.get("techStack") as string
-  
+  const acceptanceCriteriaRaw = (formData.get("acceptanceCriteria") as string) || ""
+
   // Nuevos campos de tiempo
   const timeLimitHours = parseInt(formData.get("timeLimitHours") as string || "6", 10)
   const expiresAtRaw = formData.get("expiresAt") as string
   const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null
 
+  // Procesar Stack Tecnológico (separado por comas)
   const techStack = techStackRaw
     .split(",")
     .map(tech => tech.trim())
+    .filter(Boolean)
+
+  // Procesar Criterios de Aceptación (separados por comas O saltos de línea)
+  const acceptanceCriteria = acceptanceCriteriaRaw
+    .split(/[\n,]+/)
+    .map(criterion => criterion.trim())
     .filter(Boolean)
 
   await prisma.challenge.create({
     data: {
       title,
       description,
+      acceptanceCriteria, // Se guarda como string[] en Prisma
       repoUrl,
       difficulty,
       techStack,
@@ -52,13 +61,10 @@ export async function deleteChallenge(challengeId: string) {
     throw new Error("No tienes permisos para eliminar desafíos.")
   }
 
-  // Elimina el desafío (Gracias a onDelete: Cascade en tu Prisma schema, 
-  // esto borrará también las TaskAssignments asociadas a este desafío de forma segura)
   await prisma.challenge.delete({
     where: { id: challengeId }
   })
 
-  // Refrescar las rutas para que el desafío desaparezca inmediatamente de la interfaz
   revalidatePath("/admin/mis-desafios")
   revalidatePath("/desafios")
 }
