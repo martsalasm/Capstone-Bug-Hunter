@@ -39,7 +39,6 @@ async function main() {
       githubUsername: 'martinsalas',
       role: Role.STUDENT,
       emailVerified: new Date(),
-      image: 'https://avatars.githubusercontent.com/u/1?v=4',
     },
   })
 
